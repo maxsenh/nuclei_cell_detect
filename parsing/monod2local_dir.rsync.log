@@ -1,0 +1,2 @@
+Authentication failed.
+rsync error: unexplained error (code 255) at rsync.c(638) [Receiver=3.1.2]
