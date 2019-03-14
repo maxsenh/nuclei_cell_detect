@@ -4,9 +4,11 @@ This project aims at providing a pipeline for efficient nuclei and cell detectio
 
 ## Detection of nuclei from rodent somatosensory cortex after DAPI-staining
 
-![1603.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Nuclei_SN_Hyb2_pos_1603.png)
+![1313_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Nuclei_SN_Hyb2_pos_1313_pred.png)
 
-![1603_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Nuclei_SN_Hyb2_pos_1603_pred.png)
+## Detection of nuclei from cell culture after DAPI staining
+
+![13_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Raw_Nuclei_13_pred.png)
 
 ## Highlights of Maskrcnn benchmark
 - **PyTorch 1.0:** RPN, Faster R-CNN and Mask R-CNN implementations that matches or exceeds Detectron accuracies
