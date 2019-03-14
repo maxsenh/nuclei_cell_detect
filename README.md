@@ -4,7 +4,7 @@ This project aims at providing a pipeline for efficient nuclei and cell detectio
 
 ## Detection of nuclei from rodent somatosensory cortex after DAPI-staining
 
-...
+![1603.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Nuclei_SN_Hyb2_pos_1603.png)
 
 ![1603_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Nuclei_SN_Hyb2_pos_1603_pred.png)
 
