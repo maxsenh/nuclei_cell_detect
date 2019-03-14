@@ -1,8 +1,12 @@
-# Faster R-CNN and Mask R-CNN in PyTorch 1.0
+# Detecting cells and nuclei from different statinings with Faster R-CNN and Mask R-CNN in PyTorch 1.0
 
-This project aims at providing a pipeline for efficient nuclei and cell detection from fluorescence images. It is based on facebookresearch maskrcnn benchmark, which is implemented with PyTorch 1.0.
+This project aims at providing a pipeline for efficient nuclei and cell detection from fluorescence images. It is based on facebookresearch maskrcnn benchmark, which is implemented in PyTorch 1.0.
 
-# Put demo image here for normal staining and poly-t staining
+## Detection of nuclei from rodent somatosensory cortex after DAPI-staining
+
+...
+
+![1603_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/images/Nuclei_SN_Hyb2_pos_1603_pred.png)
 
 ## Highlights of Maskrcnn benchmark
 - **PyTorch 1.0:** RPN, Faster R-CNN and Mask R-CNN implementations that matches or exceeds Detectron accuracies
