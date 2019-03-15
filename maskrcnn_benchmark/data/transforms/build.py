@@ -10,7 +10,7 @@ def build_transforms(cfg, is_train=True):
         # if not, width and height will not work for the rotation
         if cfg.INPUT.ONLINE_AUGMENT == True:
             # 8 cases
-            if cfg.INPUT.HEIGHT_IS_WIDTH:
+            if cfg.INPUT.HEIGHT_IS_WIDTH == True:
                 hflip_prob = 0.5
                 vflip_prob = 0.5
                 rot_prob = 1

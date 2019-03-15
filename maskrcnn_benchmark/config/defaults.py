@@ -3,6 +3,7 @@ import os
 
 from yacs.config import CfgNode as CN
 
+
 # -----------------------------------------------------------------------------
 # Convention about Training / Test specific parameters
 # -----------------------------------------------------------------------------
@@ -47,16 +48,13 @@ _C.INPUT.MIN_SIZE_TEST = 800
 # Maximum size of the side of the image during testing
 _C.INPUT.MAX_SIZE_TEST = 1333
 # Values to be used for image normalization
-# Max is fixed to 0 for no normalization
-_C.INPUT.PIXEL_MEAN = [0., 0., 0.]
+_C.INPUT.PIXEL_MEAN = [102.9801, 115.9465, 122.7717]
 # Values to be used for image normalization
 _C.INPUT.PIXEL_STD = [1., 1., 1.]
 # Convert image to BGR format (for Caffe2 models), in range 0-255
 _C.INPUT.TO_BGR255 = True
-# Max
 # Height of images equals the width, True for nuclei dataset
 _C.INPUT.HEIGHT_IS_WIDTH = False
-# Max
 # Define if online augmentation, such as horizontal/vertical flipping or rotation of 0/90/180/270 degrees, should be done
 _C.INPUT.ONLINE_AUGMENT = False
 
@@ -425,5 +423,4 @@ _C.TEST.DETECTIONS_PER_IMG = 100
 # ---------------------------------------------------------------------------- #
 _C.OUTPUT_DIR = "."
 
-# May be changed in the config file
 _C.PATHS_CATALOG = os.path.join(os.path.dirname(__file__), "paths_catalog.py")
