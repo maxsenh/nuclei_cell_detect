@@ -11,13 +11,90 @@ from maskrcnn_benchmark import layers as L
 from maskrcnn_benchmark.utils import cv2_util
 
 
-class NUCLEIdemo(object):
-    # CMy categories
+class COCODemo(object):
+    # COCO categories for pretty print
     CATEGORIES = [
         "__background",
-        "nuclei",
-        "undefined",
-        "clusters"
+        "person",
+        "bicycle",
+        "car",
+        "motorcycle",
+        "airplane",
+        "bus",
+        "train",
+        "truck",
+        "boat",
+        "traffic light",
+        "fire hydrant",
+        "stop sign",
+        "parking meter",
+        "bench",
+        "bird",
+        "cat",
+        "dog",
+        "horse",
+        "sheep",
+        "cow",
+        "elephant",
+        "bear",
+        "zebra",
+        "giraffe",
+        "backpack",
+        "umbrella",
+        "handbag",
+        "tie",
+        "suitcase",
+        "frisbee",
+        "skis",
+        "snowboard",
+        "sports ball",
+        "kite",
+        "baseball bat",
+        "baseball glove",
+        "skateboard",
+        "surfboard",
+        "tennis racket",
+        "bottle",
+        "wine glass",
+        "cup",
+        "fork",
+        "knife",
+        "spoon",
+        "bowl",
+        "banana",
+        "apple",
+        "sandwich",
+        "orange",
+        "broccoli",
+        "carrot",
+        "hot dog",
+        "pizza",
+        "donut",
+        "cake",
+        "chair",
+        "couch",
+        "potted plant",
+        "bed",
+        "dining table",
+        "toilet",
+        "tv",
+        "laptop",
+        "mouse",
+        "remote",
+        "keyboard",
+        "cell phone",
+        "microwave",
+        "oven",
+        "toaster",
+        "sink",
+        "refrigerator",
+        "book",
+        "clock",
+        "vase",
+        "scissors",
+        "teddy bear",
+        "hair drier",
+        "toothbrush",
     ]
 
     def __init__(
@@ -36,7 +113,7 @@ class NUCLEIdemo(object):
         self.min_image_size = min_image_size
 
         save_dir = cfg.OUTPUT_DIR
-        checkpointer = DetectronCheckpointer(cfg, self.model, save_dir=save_dir)        
+        checkpointer = DetectronCheckpointer(cfg, self.model, save_dir=save_dir)
         _ = checkpointer.load(cfg.MODEL.WEIGHT)
 
         self.transforms = self.build_transform()
@@ -103,7 +180,7 @@ class NUCLEIdemo(object):
             result = self.overlay_mask(result, top_predictions)
         result = self.overlay_class_names(result, top_predictions)
 
-        return result, predictions
+        return result
 
     def compute_prediction(self, original_image):
         """
@@ -210,12 +287,10 @@ class NUCLEIdemo(object):
         colors = self.compute_colors_for_labels(labels).tolist()
 
         for mask, color in zip(masks, colors):
-            # fix for CV2 version check issue #339
             thresh = mask[0, :, :, None]
             contours, hierarchy = cv2_util.findContours(
                 thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-       
             image = cv2.drawContours(image, contours, -1, color, 3)
 
         composite = image
@@ -269,89 +344,16 @@ class NUCLEIdemo(object):
                 It should contain the field `scores` and `labels`.
         """
         scores = predictions.get_field("scores").tolist()
-        print("scores_____", scores)
         labels = predictions.get_field("labels").tolist()
-        print("labels_____", labels)
-
         labels = [self.CATEGORIES[i] for i in labels]
         boxes = predictions.bbox
-        width, heigth, dim = image.shape
-        font_scale = (width * heigth) / (1000 * 1000)
-        font_scale = 1
-              
+
         template = "{}: {:.2f}"
         for box, score, label in zip(boxes, scores, labels):
             x, y = box[:2]
             s = template.format(label, score)
-
             cv2.putText(
-                image, s, (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), 2
+                image, s, (x, y), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1
             )
 
         return image
-'''
-# New part
-import numpy as np
-import matplotlib.pyplot as plt
-from maskrcnn_benchmark.structures.keypoint import PersonKeypoints
-
-def vis_keypoints(img, kps, kp_thresh=2, alpha=0.7):
-    """Visualizes keypoints (adapted from vis_one_image).
-    kps has shape (4, #keypoints) where 4 rows are (x, y, logit, prob).
-    """
-    dataset_keypoints = PersonKeypoints.NAMES
-    kp_lines = PersonKeypoints.CONNECTIONS
-
-    # Convert from plt 0-1 RGBA colors to 0-255 BGR colors for opencv.
-    cmap = plt.get_cmap('rainbow')
-    colors = [cmap(i) for i in np.linspace(0, 1, len(kp_lines) + 2)]
-    colors = [(c[2] * 255, c[1] * 255, c[0] * 255) for c in colors]
-
-    # Perform the drawing on a copy of the image, to allow for blending.
-    kp_mask = np.copy(img)
-
-    # Draw mid shoulder / mid hip first for better visualization.
-    mid_shoulder = (
-        kps[:2, dataset_keypoints.index('right_shoulder')] +
-        kps[:2, dataset_keypoints.index('left_shoulder')]) / 2.0
-    sc_mid_shoulder = np.minimum(
-        kps[2, dataset_keypoints.index('right_shoulder')],
-        kps[2, dataset_keypoints.index('left_shoulder')])
-    mid_hip = (
-        kps[:2, dataset_keypoints.index('right_hip')] +
-        kps[:2, dataset_keypoints.index('left_hip')]) / 2.0
-    sc_mid_hip = np.minimum(
-        kps[2, dataset_keypoints.index('right_hip')],
-        kps[2, dataset_keypoints.index('left_hip')])
-    nose_idx = dataset_keypoints.index('nose')
-    if sc_mid_shoulder > kp_thresh and kps[2, nose_idx] > kp_thresh:
-        cv2.line(
-            kp_mask, tuple(mid_shoulder), tuple(kps[:2, nose_idx]),
-            color=colors[len(kp_lines)], thickness=2, lineType=cv2.LINE_AA)
-    if sc_mid_shoulder > kp_thresh and sc_mid_hip > kp_thresh:
-        cv2.line(
-            kp_mask, tuple(mid_shoulder), tuple(mid_hip),
-            color=colors[len(kp_lines) + 1], thickness=2, lineType=cv2.LINE_AA)
-
-    # Draw the keypoints.
-    for l in range(len(kp_lines)):
-        i1 = kp_lines[l][0]
-        i2 = kp_lines[l][1]
-        p1 = kps[0, i1], kps[1, i1]
-        p2 = kps[0, i2], kps[1, i2]
-        if kps[2, i1] > kp_thresh and kps[2, i2] > kp_thresh:
-            cv2.line(
-                kp_mask, p1, p2,
-                color=colors[l], thickness=2, lineType=cv2.LINE_AA)
-        if kps[2, i1] > kp_thresh:
-            cv2.circle(
-                kp_mask, p1,
-                radius=3, color=colors[l], thickness=-1, lineType=cv2.LINE_AA)
-        if kps[2, i2] > kp_thresh:
-            cv2.circle(
-                kp_mask, p2,
-                radius=3, color=colors[l], thickness=-1, lineType=cv2.LINE_AA)
-
-    # Blend the keypoints.
-    return cv2.addWeighted(img, 1.0 - alpha, kp_mask, alpha, 0)
-'''
