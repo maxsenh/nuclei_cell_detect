@@ -12,6 +12,10 @@ This project aims at providing a pipeline for efficient nuclei and cell detectio
 
 ## Upcoming: Prediction of cells after poly-T staining
 
+Here the labeled image.
+
+![poly_t_image](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/new_images/BG92_5127_labeled.png)
+
 ## Highlights of Maskrcnn benchmark
 - **PyTorch 1.0:** RPN, Faster R-CNN and Mask R-CNN implementations that matches or exceeds Detectron accuracies
 - **Very fast**: up to **2x** faster than [Detectron](https://github.com/facebookresearch/Detectron) and **30%** faster than [mmdetection](https://github.com/open-mmlab/mmdetection) during training. See [MODEL_ZOO.md](MODEL_ZOO.md) for more details.
