@@ -1,8 +1,20 @@
-# Faster R-CNN and Mask R-CNN in PyTorch 1.0
+# Detecting cells and nuclei from different statinings with Faster R-CNN and Mask R-CNN in PyTorch 1.0
 
-This project aims at providing a pipeline for efficient nuclei and cell detection from fluorescence images. It is based on facebookresearch maskrcnn benchmark, which is implemented with PyTorch 1.0.
+This project aims at providing a pipeline for efficient nuclei and cell detection from fluorescence images. It is based on facebookresearch maskrcnn benchmark, which is implemented in PyTorch 1.0.
 
-# Put demo image here for normal staining and poly-t staining
+## Detection of nuclei from rodent somatosensory cortex after DAPI-staining
+
+![1313_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/new_images/Nuclei_SN_Hyb2_pos_1313_pred.png)
+
+## Detection of nuclei from cell culture after DAPI staining
+
+![13_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/new_images/Raw_Nuclei_13_pred.png)
+
+## Upcoming: Prediction of cells after poly-T staining
+
+Here the labeled image.
+
+![poly_t_image](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/new_images/BG92_5127_labeled.png)
 
 ## Highlights of Maskrcnn benchmark
 - **PyTorch 1.0:** RPN, Faster R-CNN and Mask R-CNN implementations that matches or exceeds Detectron accuracies
@@ -13,18 +25,11 @@ This project aims at providing a pipeline for efficient nuclei and cell detectio
 - **CPU support for inference:** runs on CPU in inference time. See our [webcam demo](demo) for an example
 - Provides pre-trained models for almost all reference Mask R-CNN and Faster R-CNN configurations with 1x schedule.
 
-## Jupyter notebook demo (unfinished)
-
-A notebook with the demo can be found in [demo/Mask_R-CNN_demo.ipynb](demo/Mask_R-CNN_demo.ipynb).
-
 ## Installation
 
 Check [INSTALL.md](INSTALL.md) for installation instructions.
 
-## Model Zoo and Baselines
-
-Pre-trained models, baselines and comparison with Detectron and mmdetection
-can be found in [MODEL_ZOO.md](MODEL_ZOO.md)
+## Pre-trained models will be available soon
 
 ## Inference in a few lines (unfinished)
 
@@ -60,26 +65,11 @@ you'll also need to change the learning rate, the number of iterations and the l
 
 Here is an example for Mask R-CNN R-50 FPN with the 1x schedule:
 ```bash
-python tools/train_net.py --config-file "configs/e2e_mask_rcnn_R_50_FPN_1x.yaml" SOLVER.IMS_PER_BATCH 2 SOLVER.BASE_LR 0.0025 SOLVER.MAX_ITER 720000 SOLVER.STEPS "(480000, 640000)" TEST.IMS_PER_BATCH 1
+python tools/train_net.py --config-file "configs/config" SOLVER.IMS_PER_BATCH 2 SOLVER.BASE_LR 0.0025 SOLVER.MAX_ITER 720000 SOLVER.STEPS "(480000, 640000)" TEST.IMS_PER_BATCH 1
 ```
 This follows the [scheduling rules from Detectron.](https://github.com/facebookresearch/Detectron/blob/master/configs/getting_started/tutorial_1gpu_e2e_faster_rcnn_R-50-FPN.yaml#L14-L30)
-Note that we have multiplied the number of iterations by 8x (as well as the learning rate schedules),
-and we have divided the learning rate by 8x.
 
-We also changed the batch size during testing, but that is generally not necessary because testing
-requires much less memory than training.
-
-
-### Multi-GPU training
-We use internally `torch.distributed.launch` in order to launch
-multi-gpu training. This utility function from PyTorch spawns as many
-Python processes as the number of GPUs we want to use, and each Python
-process will only use a single GPU.
-
-```bash
-export NGPUS=8
-python -m torch.distributed.launch --nproc_per_node=$NGPUS /path_to_maskrcnn_benchmark/tools/train_net.py --config-file "path/to/config/file.yaml"
-```
+### Multi-GPU training (unfinished)
 
 ## Abstractions
 For more information on some of the main abstractions in our implementation, see [ABSTRACTIONS.md](ABSTRACTIONS.md).
