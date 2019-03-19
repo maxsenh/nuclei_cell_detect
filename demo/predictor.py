@@ -21,6 +21,9 @@ from maskrcnn_benchmark.structures.bounding_box import BoxList
 from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask
 from matplotlib.patches import Rectangle, Polygon
 from PIL import Image
+from matplotlib.ticker import NullLocator
+import matplotlib.pylab as pylab
+pylab.rcParams['figure.figsize'] = 20,12
 
 class NUCLEIdemo(object):
     # My categories
@@ -197,14 +200,25 @@ class NUCLEIdemo(object):
             if add_class_names:
                 result_masks = self.overlay_class_names(result_masks, top_predictions)
 
+                
+
             
             if save_independently:
                 # 1
-                fig = plt.figure(dpi=150)
-                ax = fig.add_subplot(111)
-                plt.imshow(pil_img)
-                plt.axis('off')
-                plt.savefig(save_independently + image['file_name'][:-4] + '_trut.png')
+                fig, ax = plt.subplots()
+                fig.subplots_adjust(left=0, right=1, bottom=0, top=1,hspace = 0, wspace = 0)
+                result = img.copy()
+                ax.imshow(Image.fromarray(result), extent=(0,1,1,0))
+                
+                #plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                #hspace = 0, wspace = 0)
+                #plt.margins(0,0)
+                ax.axis('tight')
+                ax.axis('off')
+                plt.savefig(save_independently + image['file_name'][:-4] + '_trut.png',
+                           bbox = "tight", pad_inches = 0)
+                plt.show()
+                
                 
                 # 2
                 fig = plt.figure(dpi=150)
@@ -214,7 +228,15 @@ class NUCLEIdemo(object):
                 b = PatchCollection(boxes, facecolor = 'none', 
                                     linewidths = 1, edgecolor = color)
                 ax.add_collection(b)
-                plt.savefig(save_independently + image['file_name'][:-4] + '_bbox.png')
+                
+                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                hspace = 0, wspace = 0)
+                plt.margins(0,0)
+                
+                plt.savefig(save_independently + image['file_name'][:-4] + '_bbox.png',
+                           bbox = "tight", pad_inches = 0)
+                plt.show()
+                plt.close()
                 
                 # 3
                 fig = plt.figure(dpi=150)
@@ -226,8 +248,14 @@ class NUCLEIdemo(object):
                 ax.add_collection(p)
                 p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 1)
                 ax.add_collection(p)
-                plt.savefig(save_independently + image['file_name'][:-4] + '_mask.png')
                 
+                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                hspace = 0, wspace = 0)
+                plt.margins(0,0)
+                plt.savefig(save_independently + image['file_name'][:-4] + '_mask.png',
+                           bbox = "tight", pad_inches = 0)
+                plt.show()
+                plt.close()
                 
             # show boxes in second plot
 
