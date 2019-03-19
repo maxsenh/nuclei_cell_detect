@@ -10,9 +10,23 @@ from maskrcnn_benchmark.modeling.roi_heads.mask_head.inference import Masker
 from maskrcnn_benchmark import layers as L
 from maskrcnn_benchmark.utils import cv2_util
 
+# added imports
+from maskrcnn_benchmark.utils.imports import import_file
+import json
+from pycocotools.coco import *
+from maskrcnn_benchmark.config.paths_catalog import DatasetCatalog
+from maskrcnn_benchmark.config import cfg
+import matplotlib.patches as patches
+from maskrcnn_benchmark.structures.bounding_box import BoxList
+from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask
+from matplotlib.patches import Rectangle, Polygon
+from PIL import Image
+from matplotlib.ticker import NullLocator
+import matplotlib.pylab as pylab
+pylab.rcParams['figure.figsize'] = 20,12
 
 class NUCLEIdemo(object):
-    # CMy categories
+    # My categories
     CATEGORIES = [
         "__background",
         "nuclei",
@@ -26,7 +40,7 @@ class NUCLEIdemo(object):
         confidence_threshold=0.7,
         show_mask_heatmaps=False,
         masks_per_dim=2,
-        min_image_size=224,
+        min_image_size=224
     ):
         self.cfg = cfg.clone()
         self.model = build_detection_model(cfg)
@@ -104,7 +118,176 @@ class NUCLEIdemo(object):
         result = self.overlay_class_names(result, top_predictions)
 
         return result, predictions
+    
+    def inference(self, add_class_names = None, save_path = None, save_independently = None):
+        """
+        Do Inference, either show the boxes or the masks
+        """
+        
+        paths_catalog = import_file("maskrcnn_benchmark.config.paths_catalog", cfg.PATHS_CATALOG, True
+        )
+        DatasetCatalog = paths_catalog.DatasetCatalog
+        test_datasets = DatasetCatalog.get(cfg.DATASETS.TEST[0])
+        img_dir = test_datasets['args']['root']
+        anno_file = test_datasets['args']['ann_file']
+        data = json.load(open(anno_file))
+        coco = COCO(anno_file)
+        predis = []
+        filenames = []
+        
+        # iterate through data
+        for i, image in enumerate(data['images']):
+            
+            pil_img = Image.open(img_dir + '/' + image['file_name'])
+            filenames.append(image['file_name'])
+            img = np.array(pil_img)[:, :, [0, 1, 2]]
+            # get ground truth boxes or masks
+            anno = [obj for obj in data['annotations'] if obj['image_id'] == image['id']]
+            classes = [obj['category_id'] for obj in data['annotations'] if obj['image_id'] == image['id']]
+            json_category_id_to_contiguous_id = {
+                    v: i + 1 for i, v in enumerate(coco.getCatIds())
+            }
+            classes = [json_category_id_to_contiguous_id[c] for c in classes]
+            classes = torch.tensor(classes)
+            boxes = [obj['bbox'] for obj in anno]
+            boxes = torch.as_tensor(boxes).reshape(-1,4)
+            target = BoxList(boxes, pil_img.size, mode = 'xywh').convert('xyxy')
+            target.add_field('labels', classes)
+            masks = [obj["segmentation"] for obj in anno]
+            masks = SegmentationMask(masks, img.size)
+            target.add_field("masks", masks)
+            target = target.clip_to_image(remove_empty=True)
+            
+            polygons = []
+            color = [[1, 0, 0] for i in range(len(boxes))]
+            boxes = []
+    
+            polys = vars(target)['extra_fields']['masks']
+            for polygon in polys:
+                try:
+                    tenso = vars(polygon)['polygons'][0]
+                except KeyError:
+                    continue
+                poly1 = tenso.numpy()
+                poly = poly1.reshape((int(len(poly1)/2),2))
+                polygons.append(Polygon(poly))
+        
+            xywh_tar = target.convert("xywh")
+            for box in vars(xywh_tar)['bbox'].numpy():
 
+                rect = Rectangle((box[0],box[1]), box[2], box[3])
+                boxes.append(rect)
+            
+
+            
+            # show ground truth image in first plot
+            fig = plt.figure()
+            ax1 = fig.add_subplot(1,3,1)
+            ax1.imshow(pil_img)
+            plt.axis('off')
+            
+            # compute predictions
+            predictions = self.compute_prediction(img)
+            predis.append(predictions)
+            top_predictions = self.select_top_predictions(predictions)
+            result = img.copy()
+            
+            result_boxes = self.overlay_boxes(result, top_predictions)
+            if add_class_names:
+                result_boxes = self.overlay_class_names(result_boxes, top_predictions)
+            result = img.copy()
+            result_masks = self.overlay_mask(result, top_predictions)
+            if add_class_names:
+                result_masks = self.overlay_class_names(result_masks, top_predictions)
+
+                
+
+            
+            if save_independently:
+                # 1
+                fig, ax = plt.subplots()
+                fig.subplots_adjust(left=0, right=1, bottom=0, top=1,hspace = 0, wspace = 0)
+                result = img.copy()
+                ax.imshow(Image.fromarray(result), extent=(0,1,1,0))
+                
+                #plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                #hspace = 0, wspace = 0)
+                #plt.margins(0,0)
+                ax.axis('tight')
+                ax.axis('off')
+                plt.savefig(save_independently + image['file_name'][:-4] + '_trut.png',
+                           bbox = "tight", pad_inches = 0)
+                plt.show()
+                
+                
+                # 2
+                fig = plt.figure(dpi=150)
+                ax = fig.add_subplot(1,1,1)
+                plt.imshow(Image.fromarray(result_boxes))
+                plt.axis('off')
+                b = PatchCollection(boxes, facecolor = 'none', 
+                                    linewidths = 1, edgecolor = color)
+                ax.add_collection(b)
+                
+                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                hspace = 0, wspace = 0)
+                plt.margins(0,0)
+                
+                plt.savefig(save_independently + image['file_name'][:-4] + '_bbox.png',
+                           bbox = "tight", pad_inches = 0)
+                plt.show()
+                plt.close()
+                
+                # 3
+                fig = plt.figure(dpi=150)
+                ax = fig.add_subplot(1,1,1)
+                plt.imshow(Image.fromarray(result_masks))
+                plt.axis('off')
+            
+                p = PatchCollection(polygons, facecolor = 'none', linewidths = 0, alpha = 0.4)
+                ax.add_collection(p)
+                p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 1)
+                ax.add_collection(p)
+                
+                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                hspace = 0, wspace = 0)
+                plt.margins(0,0)
+                plt.savefig(save_independently + image['file_name'][:-4] + '_mask.png',
+                           bbox = "tight", pad_inches = 0)
+                plt.show()
+                plt.close()
+                
+            # show boxes in second plot
+
+            ax2 = fig.add_subplot(1,3,2)
+            plt.imshow(Image.fromarray(result_boxes))
+            plt.axis('off')
+            b = PatchCollection(boxes, facecolor = 'none', linewidths = 1, edgecolor = color)
+            ax2.add_collection(b)
+            
+            # show masks in third plot
+
+            ax3 = fig.add_subplot(1,3,3)
+            plt.imshow(Image.fromarray(result_masks))
+            plt.axis('off')
+            
+            p = PatchCollection(polygons, facecolor = 'none', linewidths = 0, alpha = 0.4)
+            ax3.add_collection(p)
+            p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 1)
+            ax3.add_collection(p)
+            
+            if save_path:
+                path = save_path + image['file_name'][:-4] + '_inference.png'
+                plt.savefig(path)
+                plt.show
+            plt.show()
+        dic = {}
+        for i in range(len(filenames)):
+            dic[filenames[i]] = predis[i]
+        return dic
+            
+
+            
     def compute_prediction(self, original_image):
         """
         Arguments:
@@ -189,7 +372,7 @@ class NUCLEIdemo(object):
             box = box.to(torch.int64)
             top_left, bottom_right = box[:2].tolist(), box[2:].tolist()
             image = cv2.rectangle(
-                image, tuple(top_left), tuple(bottom_right), tuple(color), 1
+                image, tuple(top_left), tuple(bottom_right), tuple(color), 2
             )
 
         return image
@@ -216,7 +399,7 @@ class NUCLEIdemo(object):
                 thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
        
-            image = cv2.drawContours(image, contours, -1, color, 3)
+            image = cv2.drawContours(image, contours, -1, color, 4)
 
         composite = image
 
@@ -269,9 +452,9 @@ class NUCLEIdemo(object):
                 It should contain the field `scores` and `labels`.
         """
         scores = predictions.get_field("scores").tolist()
-        print("scores_____", scores)
+        
         labels = predictions.get_field("labels").tolist()
-        print("labels_____", labels)
+        
 
         labels = [self.CATEGORIES[i] for i in labels]
         boxes = predictions.bbox
@@ -289,69 +472,3 @@ class NUCLEIdemo(object):
             )
 
         return image
-'''
-# New part
-import numpy as np
-import matplotlib.pyplot as plt
-from maskrcnn_benchmark.structures.keypoint import PersonKeypoints
-
-def vis_keypoints(img, kps, kp_thresh=2, alpha=0.7):
-    """Visualizes keypoints (adapted from vis_one_image).
-    kps has shape (4, #keypoints) where 4 rows are (x, y, logit, prob).
-    """
-    dataset_keypoints = PersonKeypoints.NAMES
-    kp_lines = PersonKeypoints.CONNECTIONS
-
-    # Convert from plt 0-1 RGBA colors to 0-255 BGR colors for opencv.
-    cmap = plt.get_cmap('rainbow')
-    colors = [cmap(i) for i in np.linspace(0, 1, len(kp_lines) + 2)]
-    colors = [(c[2] * 255, c[1] * 255, c[0] * 255) for c in colors]
-
-    # Perform the drawing on a copy of the image, to allow for blending.
-    kp_mask = np.copy(img)
-
-    # Draw mid shoulder / mid hip first for better visualization.
-    mid_shoulder = (
-        kps[:2, dataset_keypoints.index('right_shoulder')] +
-        kps[:2, dataset_keypoints.index('left_shoulder')]) / 2.0
-    sc_mid_shoulder = np.minimum(
-        kps[2, dataset_keypoints.index('right_shoulder')],
-        kps[2, dataset_keypoints.index('left_shoulder')])
-    mid_hip = (
-        kps[:2, dataset_keypoints.index('right_hip')] +
-        kps[:2, dataset_keypoints.index('left_hip')]) / 2.0
-    sc_mid_hip = np.minimum(
-        kps[2, dataset_keypoints.index('right_hip')],
-        kps[2, dataset_keypoints.index('left_hip')])
-    nose_idx = dataset_keypoints.index('nose')
-    if sc_mid_shoulder > kp_thresh and kps[2, nose_idx] > kp_thresh:
-        cv2.line(
-            kp_mask, tuple(mid_shoulder), tuple(kps[:2, nose_idx]),
-            color=colors[len(kp_lines)], thickness=2, lineType=cv2.LINE_AA)
-    if sc_mid_shoulder > kp_thresh and sc_mid_hip > kp_thresh:
-        cv2.line(
-            kp_mask, tuple(mid_shoulder), tuple(mid_hip),
-            color=colors[len(kp_lines) + 1], thickness=2, lineType=cv2.LINE_AA)
-
-    # Draw the keypoints.
-    for l in range(len(kp_lines)):
-        i1 = kp_lines[l][0]
-        i2 = kp_lines[l][1]
-        p1 = kps[0, i1], kps[1, i1]
-        p2 = kps[0, i2], kps[1, i2]
-        if kps[2, i1] > kp_thresh and kps[2, i2] > kp_thresh:
-            cv2.line(
-                kp_mask, p1, p2,
-                color=colors[l], thickness=2, lineType=cv2.LINE_AA)
-        if kps[2, i1] > kp_thresh:
-            cv2.circle(
-                kp_mask, p1,
-                radius=3, color=colors[l], thickness=-1, lineType=cv2.LINE_AA)
-        if kps[2, i2] > kp_thresh:
-            cv2.circle(
-                kp_mask, p2,
-                radius=3, color=colors[l], thickness=-1, lineType=cv2.LINE_AA)
-
-    # Blend the keypoints.
-    return cv2.addWeighted(img, 1.0 - alpha, kp_mask, alpha, 0)
-'''
