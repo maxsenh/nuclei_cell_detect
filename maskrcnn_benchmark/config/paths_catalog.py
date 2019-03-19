@@ -61,15 +61,15 @@ class DatasetCatalog(object):
         
         
         "coco_poly_t_offline_train" : {
-            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190306_poly_t/train/",
+            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190306_poly_t/train",
             "ann_file" : "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/20190306_poly_t/train_poly_t.json"
         },
          "coco_poly_t_offline_val" : {
-            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190306_poly_t/val/",
+            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190306_poly_t/val",
             "ann_file" : "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/20190306_poly_t/val_poly_t.json"
         },
          "coco_poly_t_offline_test" : {
-            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190306_poly_t/test/",
+            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190306_poly_t/test",
             "ann_file" : "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/20190306_poly_t/test_poly_t.json"
          }
     }
