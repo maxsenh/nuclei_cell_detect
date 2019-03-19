@@ -205,16 +205,18 @@ class NUCLEIdemo(object):
             
             if save_independently:
                 # 1
-                fig, ax = plt.subplots()
-                fig.subplots_adjust(left=0, right=1, bottom=0, top=1,hspace = 0, wspace = 0)
-                result = img.copy()
-                ax.imshow(Image.fromarray(result), extent=(0,1,1,0))
+                fig = plt.figure(dpi=150)
+                ax = fig.add_subplot(1,1,1)
                 
-                #plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-                #hspace = 0, wspace = 0)
-                #plt.margins(0,0)
-                ax.axis('tight')
-                ax.axis('off')
+                result = img.copy()
+                
+                plt.imshow(Image.fromarray(result))
+                plt.axis('off')
+                
+                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                hspace = 0, wspace = 0)
+                plt.margins(0,0)
+                
                 plt.savefig(save_independently + image['file_name'][:-4] + '_trut.png',
                            bbox = "tight", pad_inches = 0)
                 plt.show()
@@ -372,7 +374,7 @@ class NUCLEIdemo(object):
             box = box.to(torch.int64)
             top_left, bottom_right = box[:2].tolist(), box[2:].tolist()
             image = cv2.rectangle(
-                image, tuple(top_left), tuple(bottom_right), tuple(color), 2
+                image, tuple(top_left), tuple(bottom_right), tuple(color), 3
             )
 
         return image
