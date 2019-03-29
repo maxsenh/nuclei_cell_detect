@@ -32,6 +32,12 @@ parser.add_argument(
     help="path to config file",
     type=str,
 )
+parser.add_argument(
+    "--show_keys",
+    default = None,
+    help = 'show the keys present in the model',
+    type=str,
+)
 
 args = parser.parse_args()
 #
@@ -44,8 +50,15 @@ newdict = _d
 
 #newdict['model'] = removekey(_d['model'],
 #                                 ['cls_score.bias', 'cls_score.weight', 'bbox_pred.bias', 'bbox_pred.weight'])
-newdict['model'] = removekey(_d['model'],
-                                ['mask_fcn_logits.bias', 'mask_fcn_logits.weight', 'cls_score.weight', 'cls_score.bias', 'bbox_pred.weight', 'bbox_pred.bias'])
 
-torch.save(newdict, args.save_path)
-print('saved to {}.'.format(args.save_path))
+#newdict['model'] = removekey(_d['model'],
+#                                ['mask_fcn_logits.bias', 'mask_fcn_logits.weight', 'cls_score.weight', 'cls_score.bias', 'bbox_pred.weight', 'bbox_pred.bias'])
+
+newdict['model'] = removekey(_d['model'], [])
+
+if args.show_keys == "True":
+    print(_d['model'].keys())
+    print("eys")
+else:
+    torch.save(newdict, args.save_path)
+    print('saved to {}.'.format(args.save_path))
