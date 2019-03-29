@@ -119,6 +119,62 @@ class NUCLEIdemo(object):
 
         return result, predictions
     
+    
+    def get_ax(self, rows=1, cols=1, size=16):
+        """Return a Matplotlib Axes array to be used in
+        all visualizations in the notebook. Provide a
+        central point to control graph sizes.
+
+        Adjust the size attribute to control how big to render images
+        """
+        _, ax = plt.subplots(rows, cols, figsize=(size*cols, size*rows))
+        return ax
+    
+    def on_test_images(self, image_folder, result_folder = None, add_class_names = None):
+        predis = []
+
+        for image in os.listdir(image_folder):
+            
+            # transform image to PIL
+            pil_img = Image.open(image_folder + image)
+            img= np.array(pil_img)[:, :, [0, 1, 2]]
+            
+            # compute predictions
+            predictions = self.compute_prediction(img)
+            predis.append(predictions)
+            top_predictions = self.select_top_predictions(predictions)
+            
+            result = img.copy()
+            
+            if self.show_mask_heatmaps:
+                return self.create_mask_montage(result, top_predictions)
+            
+            result = self.overlay_boxes(result, top_predictions)
+            if add_class_names:
+                result = self.overlay_class_names(result, top_predictions)
+            if self.cfg.MODEL.MASK_ON:
+                result = self.overlay_mask(result, top_predictions)
+            
+            if result_folder:
+                
+                # show prediction
+                ax = self.get_ax()
+                ax.imshow(result)
+                plt.gca().set_axis_off()
+                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+                            hspace = 0, wspace = 0)
+                plt.margins(0,0)
+                plt.gca().xaxis.set_major_locator(NullLocator())
+                plt.gca().yaxis.set_major_locator(NullLocator())
+        
+                plt.savefig(result_folder + image[:-4] + '_pred.png', bbox_inches = 'tight', pad_inches = 0)
+                plt.close()
+            else:
+                plt.imshow(Image.fromarray(result))
+                plt.show()
+        return predis
+                
+                
     def inference(self, add_class_names = None, save_path = None, save_independently = None):
         """
         Do Inference, either show the boxes or the masks
@@ -200,9 +256,7 @@ class NUCLEIdemo(object):
             if add_class_names:
                 result_masks = self.overlay_class_names(result_masks, top_predictions)
 
-                
-
-            
+   
             if save_independently:
                 # 1
                 fig = plt.figure(dpi=150)
