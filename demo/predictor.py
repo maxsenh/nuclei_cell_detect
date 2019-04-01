@@ -137,9 +137,13 @@ class NUCLEIdemo(object):
             
             # transform image to PIL
             pil_img = Image.open(image_folder + image)
-            img= np.array(pil_img)#[:, :, [0, 1, 2]]
-            img = np.dstack((img, img, img))
-            #print(img.shape)
+            
+            
+            img = np.array(pil_img)[:, :, [0, 1, 2]]
+            #img = np.dstack((img, img, img))
+            print(img.shape)
+            print(img.dtype)
+            print(img)
             
             # compute predictions
             predictions = self.compute_prediction(img)
@@ -357,7 +361,7 @@ class NUCLEIdemo(object):
                 the BoxList via `prediction.fields()`
         """
         # apply pre-processing to image
-        image = self.transforms(np.int8(original_image))
+        image = self.transforms(np.uint8(original_image))
         # convert to an ImageList, padded so that it is divisible by
         # cfg.DATALOADER.SIZE_DIVISIBILITY
         image_list = to_image_list(image, self.cfg.DATALOADER.SIZE_DIVISIBILITY)
