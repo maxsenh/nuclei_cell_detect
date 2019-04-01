@@ -1,7 +1,7 @@
 INPUT:
   MIN_SIZE_TRAIN: (1024,)
   MAX_SIZE_TRAIN: 1025
-  PIXEL_MEAN: [0., 0., 0.]
+  PIXEL_MEAN: [20., 20., 20.]
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
   WEIGHT: "catalog://detectron_own/mask_rcnn_R-50-FPN_1x_detectron_no_last_layers"
