@@ -28,7 +28,7 @@ def get_extensions():
     extra_compile_args = {"cxx": []}
     define_macros = []
 
-    if torch.cuda.is_available() and CUDA_HOME is not None:
+    if (torch.cuda.is_available() and CUDA_HOME is not None) or os.getenv("FORCE_CUDA", "0") == "1":
         extension = CUDAExtension
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
@@ -57,7 +57,7 @@ def get_extensions():
 
 
 setup(
-    name="nuclei_cell_detect",
+    name="maskrcnn_benchmark",
     version="0.1",
     author="originally from fmassa, implemented from maxsenh",
     url="https://github.com/maxsenh/nuclei_cell_detect.git",
