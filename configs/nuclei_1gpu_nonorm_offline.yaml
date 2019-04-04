@@ -49,4 +49,3 @@ SOLVER:
 TEST:
   IMS_PER_BATCH: 1
 OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190310_offline_augment"
-PATHS_CATALOG: "/home/max/github/ms2/code/mrcnn/paths_catalog.py"
