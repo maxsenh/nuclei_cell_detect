@@ -7,6 +7,13 @@ import os
 class DatasetCatalog(object):
     DATA_DIR = "datasets"
     DATASETS = {
+        
+        "coco_transfer_test_train": {
+            "img_dir": "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190309_aug_pop/transfer_train/",
+            "ann_file": "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/20190309_aug_pop/train_transfer.json"
+        },
+        
+        
         "coco_resized_nuclei_train": {
             "img_dir": "/data/proj/smFISH/Students/Max_Senftleben/files/data/nuclei_20181107_data/train",
             "ann_file": "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/nuclei_20181107/train_nuclei.json"
