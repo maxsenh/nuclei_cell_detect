@@ -36,7 +36,7 @@ MODEL:
   MASK_ON: True
 DATASETS:
   TRAIN: ("coco_offline_augmented_train","coco_offline_augmented_val")
-  TEST: ("coco_complete_popped_test",)
+  TEST: ("coco_offline_augmented_test",)
 DATALOADER:
   SIZE_DIVISIBILITY: 32
   ASPECT_RATIO_GROUPING: False 
