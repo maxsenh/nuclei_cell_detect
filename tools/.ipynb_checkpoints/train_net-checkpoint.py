@@ -25,8 +25,9 @@ from maskrcnn_benchmark.utils.imports import import_file
 from maskrcnn_benchmark.utils.logger import setup_logger
 from maskrcnn_benchmark.utils.miscellaneous import mkdir
 
+from maskrcnn_benchmark.utils.metric_logger import (MetricLogger, TensorboardLogger)
 
-def train(cfg, local_rank, distributed):
+def train(cfg, local_rank, distributed, use_tensorboard=False):
     model = build_detection_model(cfg)
     device = torch.device(cfg.MODEL.DEVICE)
     model.to(device)
