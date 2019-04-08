@@ -65,6 +65,10 @@ class DatasetCatalog(object):
             "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190309_aug_pop/val",
             "ann_file" : "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/20190309_aug_pop/val_nuclei_pop.json"
         },
+        "coco_offline_augmented_test" : {
+            "img_dir" : "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190309_aug_pop/test",
+            "ann_file" : "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/20190309_aug_pop/test_pop.json"
+        },
         
         
         "coco_poly_t_offline_train" : {
