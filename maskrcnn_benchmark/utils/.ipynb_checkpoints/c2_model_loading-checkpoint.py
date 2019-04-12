@@ -117,9 +117,10 @@ def _rename_weights_for_resnet(weights, stage_names):
     new_weights = OrderedDict()
     for k in original_keys:
         v = weights[k]
+        #print(k)
         if "_momentum" in k:
             continue
-        # if 'fc1000' in k:
+        #if 'fc1000' in k:
         #     continue
         w = torch.from_numpy(v)
         # if "bn" in k:

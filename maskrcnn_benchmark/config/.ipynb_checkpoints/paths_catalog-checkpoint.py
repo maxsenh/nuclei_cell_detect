@@ -137,7 +137,12 @@ class ModelCatalog(object):
         # keypoints
         "37697547/e2e_keypoint_rcnn_R-50-FPN_1x": "08_42_54.kdzV35ao",
         # own, this works best so far
-        "mask_rcnn_R-50-FPN_1x_detectron_no_last_layers" : 'mask_rcnn_R-50-FPN_1x_detectron_no_last_layers.pth'
+        "mask_rcnn_R-50-FPN_1x_detectron_no_last_layers" : 'mask_rcnn_R-50-FPN_1x_detectron_no_last_layers.pth',
+        # own using R-101 this time
+        "35861858/model_finaln_no_last_layers" : "35861858/model_finaln_no_last_layers.pth",
+        "36494496/model_final" : "36494496/model_final.pkl",
+        "37129812/model_final" : "37129812/model_final.pkl",
+        "37129812/model_final_no_last_layers" : "37129812/model_final_no_last_layers.pth"
     }
 
     @staticmethod

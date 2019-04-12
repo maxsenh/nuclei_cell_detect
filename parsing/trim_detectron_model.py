@@ -48,13 +48,11 @@ cfg.merge_from_file(args.cfg)
 _d = load_c2_format(cfg, DETECTRON_PATH)
 newdict = _d
 
+
 newdict['model'] = removekey(_d['model'],
-                                 ['optimizer', 'param_groups'])
+                                ['mask_fcn_logits.bias', 'mask_fcn_logits.weight', 'cls_score.weight', 'cls_score.bias', 'bbox_pred.weight', 'bbox_pred.bias'])
 
-#newdict['model'] = removekey(_d['model'],
-#                                ['mask_fcn_logits.bias', 'mask_fcn_logits.weight', 'cls_score.weight', 'cls_score.bias', 'bbox_pred.weight', 'bbox_pred.bias'])
-
-newdict['model'] = removekey(_d['model'], [])
+#newdict['model'] = removekey(_d['model'], [])
 
 if args.show_keys == "True":
     print(_d['model'].keys())
