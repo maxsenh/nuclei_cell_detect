@@ -52,3 +52,4 @@ SOLVER:
 TEST:
   IMS_PER_BATCH: 1
 OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190408_resx-152_offline"
+TENSORBOARD_EXPERIMENT: "/home/max/mrcnn_b_work/OUT/TensorboardX/20190412_nuclei_r152"
