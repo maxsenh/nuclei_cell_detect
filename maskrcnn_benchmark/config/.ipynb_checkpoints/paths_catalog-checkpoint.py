@@ -14,6 +14,16 @@ class DatasetCatalog(object):
         },
         
         
+        "coco_transfer_ale_train": {
+            "img_dir": "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190422_AMEX_transfer_nuclei/train/",
+            "ann_file": "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190422_AMEX_transfer_nuclei/annos/train.json"
+        },
+        "coco_transfer_ale_val": {
+            "img_dir": "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190422_AMEX_transfer_nuclei/val/",
+            "ann_file": "/data/proj/smFISH/Students/Max_Senftleben/files/data/20190422_AMEX_transfer_nuclei/annos/val.json"
+        },
+        
+        
         "coco_resized_nuclei_train": {
             "img_dir": "/data/proj/smFISH/Students/Max_Senftleben/files/data/nuclei_20181107_data/train",
             "ann_file": "/data/proj/smFISH/Students/Max_Senftleben/files/annotation/nuclei_20181107/train_nuclei.json"

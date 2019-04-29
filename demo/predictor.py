@@ -221,7 +221,9 @@ class NUCLEIdemo(object):
             target = target.clip_to_image(remove_empty=True)
             
             polygons = []
-            color = [[1, 0, 0] for i in range(len(boxes))]
+            color_rgb = [[255,0,0], [255, 0, 113], [255, 87, 0], [255,101,80]]
+            colors = {i: [s/255 for s in color] for i, color in enumerate(color_rgb)}
+            color = [colors[i.item()] for i in classes]
             boxes = []
     
             polys = vars(target)['extra_fields']['masks']
@@ -288,7 +290,7 @@ class NUCLEIdemo(object):
                 plt.imshow(Image.fromarray(result_boxes))
                 plt.axis('off')
                 b = PatchCollection(boxes, facecolor = 'none', 
-                                    linewidths = 1, edgecolor = color)
+                                    linewidths = 2, edgecolor = color)
                 ax.add_collection(b)
                 
                 plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
@@ -308,7 +310,7 @@ class NUCLEIdemo(object):
             
                 p = PatchCollection(polygons, facecolor = 'none', linewidths = 0, alpha = 0.4)
                 ax.add_collection(p)
-                p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 1)
+                p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 2)
                 ax.add_collection(p)
                 
                 plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
@@ -324,7 +326,7 @@ class NUCLEIdemo(object):
             ax2 = fig.add_subplot(1,3,2)
             plt.imshow(Image.fromarray(result_boxes))
             plt.axis('off')
-            b = PatchCollection(boxes, facecolor = 'none', linewidths = 1, edgecolor = color)
+            b = PatchCollection(boxes, facecolor = 'none', linewidths = 2, edgecolor = color)
             ax2.add_collection(b)
             
             # show masks in third plot
@@ -335,7 +337,7 @@ class NUCLEIdemo(object):
             
             p = PatchCollection(polygons, facecolor = 'none', linewidths = 0, alpha = 0.4)
             ax3.add_collection(p)
-            p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 1)
+            p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 2)
             ax3.add_collection(p)
             
             if save_path:
@@ -460,8 +462,8 @@ class NUCLEIdemo(object):
             contours, hierarchy = cv2_util.findContours(
                 thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-       
-            image = cv2.drawContours(image, contours, -1, color, 4)
+            # change width of the mask here
+            image = cv2.drawContours(image, contours, -1, color, 2)
 
         composite = image
 
