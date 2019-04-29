@@ -24,6 +24,7 @@ def do_coco_evaluation(
     if box_only:
         logger.info("Evaluating bbox proposals")
         areas = {"all": "", "small": "s", "medium": "m", "large": "l"}
+        print("___________________________________________________1 do coco eval ", areas)
         res = COCOResults("box_proposal")
         for limit in [100, 1000]:
             for area, suffix in areas.items():
@@ -205,6 +206,10 @@ def evaluate_box_proposals(
         "256-512": 6,
         "512-inf": 7,
     }
+    # max edit, only get all areas together
+    
+    areas = {'all': 0}
+    print("___________________________________________________1 evaluate coco")
     area_ranges = [
         [0 ** 2, 1e5 ** 2],  # all
         [0 ** 2, 32 ** 2],  # small
@@ -215,6 +220,9 @@ def evaluate_box_proposals(
         [256 ** 2, 512 ** 2],  # 256-512
         [512 ** 2, 1e5 ** 2],
     ]  # 512-inf
+    
+    # max edit, same as above
+    area_ranges = [[0 ** 2, 1e5 ** 2]]
     assert area in areas, "Unknown area range: {}".format(area)
     area_range = area_ranges[areas[area]]
     gt_overlaps = []
@@ -312,11 +320,16 @@ def evaluate_predictions_on_coco(
 
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
-
+    
+    # is coco dt the detections and coco gt the ground truth?
     coco_dt = coco_gt.loadRes(str(json_result_file)) if coco_results else COCO()
-
-    # coco_dt = coco_gt.loadRes(coco_results)
+    print('___________________________________________')
+    
+    # prepare coco eval function, parameters may be changed, check cocoeval.py
+    # for example the cat ID can be changed so that one is only looking on one catID
+    print("Evaluation for all")
     coco_eval = COCOeval(coco_gt, coco_dt, iou_type)
+    #coco_eval.params.catIds = [1]
     coco_eval.evaluate()
     coco_eval.accumulate()
     coco_eval.summarize()
