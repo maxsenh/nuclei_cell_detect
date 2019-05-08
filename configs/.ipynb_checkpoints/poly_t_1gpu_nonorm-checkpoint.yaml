@@ -44,7 +44,7 @@ DATALOADER:
   SIZE_DIVISIBILITY: 32
   ASPECT_RATIO_GROUPING: False 
 SOLVER:
-  BASE_LR: 0.0025
+  BASE_LR: 0.00125
   WEIGHT_DECAY: 0.0001
   STEPS: (480000, 640000)
   MAX_ITER: 720000
@@ -52,5 +52,5 @@ SOLVER:
 TEST:
   IMS_PER_BATCH: 1
   DETECTIONS_PER_IMG: 120
-OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190315_poly_t"
+OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190315_poly_t_lr_000015/"
 PATHS_CATALOG: "/home/max/github/ms2/code/mrcnn/paths_catalog.py"

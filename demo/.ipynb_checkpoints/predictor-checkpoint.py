@@ -23,8 +23,10 @@ from matplotlib.patches import Rectangle, Polygon
 from PIL import Image
 from matplotlib.ticker import NullLocator
 import matplotlib.pylab as pylab
-pylab.rcParams['figure.figsize'] = 20,12
 
+def hook(module, input, output):
+            setattr(module, "_value_hook", output)
+        
 class NUCLEIdemo(object):
     # My categories
     CATEGORIES = [
@@ -47,6 +49,9 @@ class NUCLEIdemo(object):
         self.model.eval()
         self.device = torch.device(cfg.MODEL.DEVICE)
         self.model.to(self.device)
+        for n, m in self.model.named_modules():
+            if n == "roi_heads":
+                m.register_forward_hook(hook)
         self.min_image_size = min_image_size
 
         save_dir = cfg.OUTPUT_DIR
@@ -95,8 +100,45 @@ class NUCLEIdemo(object):
             ]
         )
         return transform
-
-    def run_on_opencv_image(self, image):
+    
+    def extract_encoding_features(self, original_images):
+        """
+        Arguments:
+            original_image (List(np.ndarray)): a list of images as returned by OpenCV
+        Returns:
+            detection_bbox (List(BoxList)): the detected objects list. With corresponding features as additional fields in `encoding_features`
+        """
+        # apply pre-processing to image
+        image = [self.transforms(original_image) for original_image in original_images]
+        # convert to an ImageList, padded so that it is divisible by
+        # cfg.DATALOADER.SIZE_DIVISIBILITY
+        image_list = to_image_list(image, self.cfg.DATALOADER.SIZE_DIVISIBILITY)
+        image_list = image_list.to(self.device)
+        # compute predictions
+        with torch.no_grad():
+            predictions = self.model(image_list)
+            for n, m in self.model.named_modules():
+                if n == "roi_heads":
+                    features = m._value_hook[0]
+        predictions = [o.to(self.cpu_device) for o in predictions]
+        features = [o.to(self.cpu_device).unsqueeze(0) for o in features]
+        detection_bboxes=[]
+        for ind, prediction in enumerate(predictions):
+            height, width = original_images[ind].shape[:-1]
+            # reshape prediction (a BoxList) into the original image size
+            prediction = prediction.resize((width, height))
+            detection_bbox = self.select_top_predictions(prediction)
+            max_proposals=self.cfg.MODEL.RPN.FPN_POST_NMS_TOP_N_TEST
+            if len(detection_bbox.extra_fields['orig_inds'])>0:
+                encoding_features = torch.cat([features[max_proposals*ind+i] for i in detection_bbox.extra_fields['orig_inds']], dim=0)
+                encoding_features = torch.cat([torch.mean(torch.cat(features[max_proposals*ind:max_proposals*ind+max_proposals]), dim=0, keepdim=True), encoding_features])
+            else:
+                encoding_features = torch.mean(torch.cat(features[max_proposals*ind:max_proposals*ind+max_proposals]), dim=0, keepdim=True)
+            detection_bbox.add_field("encoding_features", encoding_features)
+            detection_bboxes.append(detection_bbox)
+        return detection_bboxes
+    
+    def run_on_opencv_image(self, image, sec_image = None):
         """
         Arguments:
             image (np.ndarray): an image as returned by OpenCV
@@ -116,8 +158,20 @@ class NUCLEIdemo(object):
         if self.cfg.MODEL.MASK_ON:
             result = self.overlay_mask(result, top_predictions)
         result = self.overlay_class_names(result, top_predictions)
-
-        return result, predictions
+        
+        print(type(sec_image))
+        if sec_image is not None:
+            result2 = sec_image.copy()
+            if self.show_mask_heatmaps:
+                return self.create_mask_montage(result2, top_predictions)
+            #result2 = self.overlay_boxes(result2, top_predictions)
+            if self.cfg.MODEL.MASK_ON:
+                result2 = self.overlay_mask(result2, top_predictions)
+            #result2 = self.overlay_class_names(result2, top_predictions)
+            
+            return [result, result2], predictions
+        else:
+            return [result], predictions
     
     
     def get_ax(self, rows=1, cols=1, size=16):

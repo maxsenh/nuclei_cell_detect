@@ -52,5 +52,5 @@ SOLVER:
 TEST:
   IMS_PER_BATCH: 1
   DETECTIONS_PER_IMG: 120
-OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190412_poly_t_r101"
-TENSORBOARD_EXPERIMENT: "/home/max/mrcnn_work/OUT/TensorboardX/20190412_polyt_r101"
+OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190507_polyt_failed"
+TENSORBOARD_EXPERIMENT: "/home/max/mrcnn_work/OUT/TensorboardX/20190503_polyt_r101_lr00005"
