@@ -4,7 +4,7 @@ INPUT:
   PIXEL_MEAN: [0., 0., 0.]
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
-  WEIGHT: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190310_offline_augment/model_final_trimmed.pth"
+  WEIGHT: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190310_offline_augment/model_0442500_trimmed.pth"
   BACKBONE:
     CONV_BODY: "R-50-FPN"
     FREEZE_CONV_BODY_AT: 4
@@ -49,4 +49,4 @@ SOLVER:
   IMS_PER_BATCH: 1
 TEST:
   IMS_PER_BATCH: 1
-OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190423_transfer_ale/"
+OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190506_ale_new/"

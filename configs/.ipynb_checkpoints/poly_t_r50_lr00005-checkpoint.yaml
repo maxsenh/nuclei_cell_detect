@@ -1,0 +1,56 @@
+INPUT:
+  MIN_SIZE_TRAIN: (512,)
+  MAX_SIZE_TRAIN: 1025
+  MIN_SIZE_TEST: 512
+  MAX_SIZE_TEST: 1025
+  PIXEL_MEAN: [0., 0., 0.]
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNN"
+  WEIGHT: "catalog://detectron_own/mask_rcnn_R-50-FPN_1x_detectron_no_last_layers"
+  BACKBONE:
+    CONV_BODY: "R-50-FPN"
+  RESNETS:
+    BACKBONE_OUT_CHANNELS: 256
+  RPN:
+    USE_FPN: True
+    ANCHOR_STRIDE: (4, 8, 16, 32, 64)
+    PRE_NMS_TOP_N_TRAIN: 2000
+    PRE_NMS_TOP_N_TEST: 1000
+    POST_NMS_TOP_N_TEST: 1000
+    FPN_POST_NMS_TOP_N_TEST: 1000
+  ROI_HEADS:
+    USE_FPN: True
+    DETECTIONS_PER_IMG: 120
+  ROI_BOX_HEAD:
+    POOLER_RESOLUTION: 7
+    POOLER_SCALES: (0.25, 0.125, 0.0625, 0.03125)
+    POOLER_SAMPLING_RATIO: 2
+    FEATURE_EXTRACTOR: "FPN2MLPFeatureExtractor"
+    PREDICTOR: "FPNPredictor"
+    NUM_CLASSES: 5
+  ROI_MASK_HEAD:
+    POOLER_SCALES: (0.25, 0.125, 0.0625, 0.03125)
+    FEATURE_EXTRACTOR: "MaskRCNNFPNFeatureExtractor"
+    PREDICTOR: "MaskRCNNC4Predictor"
+    POOLER_RESOLUTION: 14
+    POOLER_SAMPLING_RATIO: 2
+    RESOLUTION: 28
+    SHARE_BOX_FEATURE_EXTRACTOR: False
+  MASK_ON: True
+DATASETS:
+  TRAIN: ("coco_poly_t_offline_train","coco_poly_t_offline_val")
+  TEST: ("coco_poly_t_offline_test",)
+DATALOADER:
+  SIZE_DIVISIBILITY: 32
+  ASPECT_RATIO_GROUPING: False 
+SOLVER:
+  BASE_LR: 0.0005
+  WEIGHT_DECAY: 0.0001
+  STEPS: (480000, 640000)
+  MAX_ITER: 720000
+  IMS_PER_BATCH: 1
+TEST:
+  IMS_PER_BATCH: 1
+  DETECTIONS_PER_IMG: 120
+OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190503_polyt_r50_lr00005/"
+PATHS_CATALOG: "/home/max/github/ms2/code/mrcnn/paths_catalog.py"

@@ -329,7 +329,7 @@ def evaluate_predictions_on_coco(
     # for example the cat ID can be changed so that one is only looking on one catID
     print("Evaluation for all")
     coco_eval = COCOeval(coco_gt, coco_dt, iou_type)
-    #coco_eval.params.catIds = [1]
+    #coco_eval.params.catIds = [3]
     coco_eval.evaluate()
     coco_eval.accumulate()
     coco_eval.summarize()

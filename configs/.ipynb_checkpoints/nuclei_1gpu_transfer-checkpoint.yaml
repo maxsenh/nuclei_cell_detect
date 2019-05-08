@@ -36,8 +36,8 @@ MODEL:
     SHARE_BOX_FEATURE_EXTRACTOR: False
   MASK_ON: True
 DATASETS:
-  TRAIN: ("coco_transfer_test_train",)
-  TEST: ("coco_offline_augmented_test",)
+  TRAIN: ("coco_transfer_train_new",)
+  TEST: ("coco_transfer_test_new",)
 DATALOADER:
   SIZE_DIVISIBILITY: 32
   ASPECT_RATIO_GROUPING: False 
@@ -45,8 +45,8 @@ SOLVER:
   BASE_LR: 0.0025
   WEIGHT_DECAY: 0.0001
   STEPS: (480000, 640000)
-  MAX_ITER: 360000
+  MAX_ITER: 720000
   IMS_PER_BATCH: 1
 TEST:
   IMS_PER_BATCH: 1
-OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190402_transfer/"
+OUTPUT_DIR: "/data/proj/smFISH/Students/Max_Senftleben/files/models/20190508_transfer_new_r50/"
