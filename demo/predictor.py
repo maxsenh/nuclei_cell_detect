@@ -23,6 +23,9 @@ from matplotlib.patches import Rectangle, Polygon
 from PIL import Image
 from matplotlib.ticker import NullLocator
 import matplotlib.pylab as pylab
+from skimage import measure
+from shapely.geometry import MultiPolygon
+from shapely.geometry import Polygon as Polygon_shapely
 
 def hook(module, input, output):
             setattr(module, "_value_hook", output)
@@ -138,7 +141,7 @@ class NUCLEIdemo(object):
             detection_bboxes.append(detection_bbox)
         return detection_bboxes
     
-    def run_on_opencv_image(self, image, sec_image = None):
+    def run_on_opencv_image(self, image, colors, sec_image = None):
         """
         Arguments:
             image (np.ndarray): an image as returned by OpenCV
@@ -152,21 +155,17 @@ class NUCLEIdemo(object):
         top_predictions = self.select_top_predictions(predictions)
 
         result = image.copy()
-        if self.show_mask_heatmaps:
-            return self.create_mask_montage(result, top_predictions)
-        result = self.overlay_boxes(result, top_predictions)
+
+
         if self.cfg.MODEL.MASK_ON:
-            result = self.overlay_mask(result, top_predictions)
-        result = self.overlay_class_names(result, top_predictions)
+            result = self.overlay_mask(result, top_predictions, colors)
+
         
         print(type(sec_image))
         if sec_image is not None:
             result2 = sec_image.copy()
-            if self.show_mask_heatmaps:
-                return self.create_mask_montage(result2, top_predictions)
-            #result2 = self.overlay_boxes(result2, top_predictions)
             if self.cfg.MODEL.MASK_ON:
-                result2 = self.overlay_mask(result2, top_predictions)
+                result2 = self.overlay_mask(result2, top_predictions, colors)
             #result2 = self.overlay_class_names(result2, top_predictions)
             
             return [result, result2], predictions
@@ -235,7 +234,7 @@ class NUCLEIdemo(object):
         return predis
                 
                 
-    def inference(self, add_class_names = None, save_path = None, save_independently = None):
+    def inference(self, colors_pred, add_class_names = None, save_path = None, save_independently = None, show_ground_truth = True):
         """
         Do Inference, either show the boxes or the masks
         """
@@ -274,10 +273,13 @@ class NUCLEIdemo(object):
             target.add_field("masks", masks)
             target = target.clip_to_image(remove_empty=True)
             
+            # these are the ground truth polygons
             polygons = []
-            color_rgb = [[255,0,0], [255, 0, 113], [255, 87, 0], [255,101,80]]
+            color_rgb = [[255,101,80], [255,55,55], [255, 255, 61], [255, 128 , 0]]
             colors = {i: [s/255 for s in color] for i, color in enumerate(color_rgb)}
             color = [colors[i.item()] for i in classes]
+            
+            # ground truth boxes
             boxes = []
     
             polys = vars(target)['extra_fields']['masks']
@@ -286,6 +288,7 @@ class NUCLEIdemo(object):
                     tenso = vars(polygon)['polygons'][0]
                 except KeyError:
                     continue
+                
                 poly1 = tenso.numpy()
                 poly = poly1.reshape((int(len(poly1)/2),2))
                 polygons.append(Polygon(poly))
@@ -297,108 +300,42 @@ class NUCLEIdemo(object):
                 boxes.append(rect)
             
 
-            
-            # show ground truth image in first plot
-            fig = plt.figure()
-            ax1 = fig.add_subplot(1,3,1)
-            ax1.imshow(pil_img)
-            plt.axis('off')
-            
             # compute predictions
             predictions = self.compute_prediction(img)
             predis.append(predictions)
             top_predictions = self.select_top_predictions(predictions)
-            result = img.copy()
             
-            result_boxes = self.overlay_boxes(result, top_predictions)
-            if add_class_names:
-                result_boxes = self.overlay_class_names(result_boxes, top_predictions)
-            result = img.copy()
-            result_masks = self.overlay_mask(result, top_predictions)
-            if add_class_names:
-                result_masks = self.overlay_class_names(result_masks, top_predictions)
+            
+            polygons_predicted, colors_prediction = self.overlay_mask(img, top_predictions, colors_pred, inference = True)
+            #print(colors_prediction)
+            
 
-   
-            if save_independently:
-                # 1
-                fig = plt.figure(dpi=150)
-                ax = fig.add_subplot(1,1,1)
-                
-                result = img.copy()
-                
-                plt.imshow(Image.fromarray(result))
-                plt.axis('off')
-                
-                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-                hspace = 0, wspace = 0)
-                plt.margins(0,0)
-                
-                plt.savefig(save_independently + image['file_name'][:-4] + '_trut.png',
-                           bbox = "tight", pad_inches = 0)
-                plt.show()
-                
-                
-                # 2
-                fig = plt.figure(dpi=150)
-                ax = fig.add_subplot(1,1,1)
-                plt.imshow(Image.fromarray(result_boxes))
-                plt.axis('off')
-                b = PatchCollection(boxes, facecolor = 'none', 
-                                    linewidths = 2, edgecolor = color)
-                ax.add_collection(b)
-                
-                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-                hspace = 0, wspace = 0)
-                plt.margins(0,0)
-                
-                plt.savefig(save_independently + image['file_name'][:-4] + '_bbox.png',
-                           bbox = "tight", pad_inches = 0)
-                plt.show()
-                plt.close()
-                
-                # 3
-                fig = plt.figure(dpi=150)
-                ax = fig.add_subplot(1,1,1)
-                plt.imshow(Image.fromarray(result_masks))
-                plt.axis('off')
+            fig = plt.figure()
+            ax = fig.add_subplot(1,1,1)
             
+            ax.imshow(Image.fromarray(img))
+            ax.axis('off')
+            
+            # this is for ground thruth
+            if show_ground_truth == True:
                 p = PatchCollection(polygons, facecolor = 'none', linewidths = 0, alpha = 0.4)
                 ax.add_collection(p)
                 p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 2)
                 ax.add_collection(p)
+            
+            
+            # this is for prediction
+            ppd = PatchCollection(polygons_predicted, facecolor = 'none', linewidths = 0, alpha = 0.4)
+            ax.add_collection(ppd)
+            ppd = PatchCollection(polygons_predicted, facecolor = 'none', edgecolors = colors_prediction, linewidths = 2)
+            ax.add_collection(ppd)
                 
-                plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-                hspace = 0, wspace = 0)
-                plt.margins(0,0)
-                plt.savefig(save_independently + image['file_name'][:-4] + '_mask.png',
-                           bbox = "tight", pad_inches = 0)
-                plt.show()
-                plt.close()
-                
-            # show boxes in second plot
-
-            ax2 = fig.add_subplot(1,3,2)
-            plt.imshow(Image.fromarray(result_boxes))
-            plt.axis('off')
-            b = PatchCollection(boxes, facecolor = 'none', linewidths = 2, edgecolor = color)
-            ax2.add_collection(b)
+            plt.savefig(save_path + image['file_name'], dpi = 200, bbox_inches='tight',pad_inches=0)
             
-            # show masks in third plot
-
-            ax3 = fig.add_subplot(1,3,3)
-            plt.imshow(Image.fromarray(result_masks))
-            plt.axis('off')
-            
-            p = PatchCollection(polygons, facecolor = 'none', linewidths = 0, alpha = 0.4)
-            ax3.add_collection(p)
-            p = PatchCollection(polygons, facecolor = 'none', edgecolors = color, linewidths = 2)
-            ax3.add_collection(p)
-            
-            if save_path:
-                path = save_path + image['file_name'][:-4] + '_inference.png'
-                plt.savefig(path)
-                plt.show
             plt.show()
+            
+          
+            
         dic = {}
         for i in range(len(filenames)):
             dic[filenames[i]] = predis[i]
@@ -468,8 +405,12 @@ class NUCLEIdemo(object):
         """
         Simple function that adds fixed colors depending on the class
         """
+        print(labels)
         colors = labels[:, None] * self.palette
+
+        
         colors = (colors % 255).numpy().astype("uint8")
+        
         return colors
 
     def overlay_boxes(self, image, predictions):
@@ -484,6 +425,7 @@ class NUCLEIdemo(object):
         labels = predictions.get_field("labels")
         boxes = predictions.bbox
 
+        
         colors = self.compute_colors_for_labels(labels).tolist()
 
         for box, color in zip(boxes, colors):
@@ -495,7 +437,7 @@ class NUCLEIdemo(object):
 
         return image
 
-    def overlay_mask(self, image, predictions):
+    def overlay_mask(self, image, predictions, color_rgb, inference = False):
         """
         Adds the instances contours for each predicted object.
         Each label has a different color.
@@ -507,21 +449,71 @@ class NUCLEIdemo(object):
         """
         masks = predictions.get_field("mask").numpy()
         labels = predictions.get_field("labels")
+        
+        # colors for predictions
 
-        colors = self.compute_colors_for_labels(labels).tolist()
+        colors = {i: [s/255 for s in color] for i, color in enumerate(color_rgb)}
+        colors = [colors[i.item()] for i in labels]
+        
+        # do this if you want to make inference
+        if inference == True:
+            polys = []
+            for mask, color in zip(masks, colors):
+                    mask = np.squeeze(mask, axis=0)
+                    
+                    contours = measure.find_contours(mask, 0.5, positive_orientation = "low")
+                    polygons_seg = []
+                    for contour in contours:
+                        for i in range(len(contour)):
+                            row, col = contour[i]
+                            contour[i] = (col - 1, row - 1)
+                        try:
+                            poly = Polygon_shapely(contour)
+                            poly = poly.simplify(1.0, preserve_topology = False)
+                            poly = np.array(poly.exterior.coords).ravel().tolist()
+                            polygons_seg.append(poly)
+                        except AttributeError:
+                            print('Attribute Error raised')
+                            continue
+                    
+                    if len(polygons_seg) > 1:
+                        
+                        polygons_seg = np.array(polygons_seg[0])
+                        #print(polygons_seg, '___THIS')
+                        polygons_seg = polygons_seg.reshape((int(len(polygons_seg)/2), 2))
+                        #polys.append(Polygon(polygons_seg))
+                    elif len(polygons_seg) > 0:
+                        polygons_seg = np.array(polygons_seg)[0]
+                        #print(polygons_seg, '___THIS')
+                        polygons_seg = polygons_seg.reshape((int(len(polygons_seg)/2), 2))
+                    else:
+                        continue
+                        
+                    polys.append(Polygon(polygons_seg))
+            return polys, colors
+        
+       
+        
+        # do it differently, thickness can only be changed to 1 (too thin) or 2 (too thick) at 
+        # least for images with the size 512x512
+        
+        else:
+            thickness_contour = int((image.shape[0] / 1024) * 2)
+            print(thickness_contour)
+            for mask, color in zip(masks, colors):
+                # fix for CV2 version check issue #339
+                print(np.unique(mask))
+                thresh = mask[0, :, :, None]
+                contours, hierarchy = cv2_util.findContours(
+                    thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+                )
+                # change width of the mask here
+                # cv2.drawContours(image, contours, contourIdx, color[, thickness[, lineType[, hierarchy[, maxLevel[, offset]]]]])
+                image = cv2.drawContours(image, contours, -1, [i*255 for i in color], thickness_contour)
 
-        for mask, color in zip(masks, colors):
-            # fix for CV2 version check issue #339
-            thresh = mask[0, :, :, None]
-            contours, hierarchy = cv2_util.findContours(
-                thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-            )
-            # change width of the mask here
-            image = cv2.drawContours(image, contours, -1, color, 2)
+            composite = image
 
-        composite = image
-
-        return composite
+            return composite
 
     def create_mask_montage(self, image, predictions):
         """
