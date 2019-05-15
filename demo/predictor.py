@@ -154,24 +154,43 @@ class NUCLEIdemo(object):
         predictions = self.compute_prediction(image)
         top_predictions = self.select_top_predictions(predictions)
 
-        result = image.copy()
-
-
-        if self.cfg.MODEL.MASK_ON:
-            result = self.overlay_mask(result, top_predictions, colors)
-
+        polygons_predicted, colors_prediction = self.overlay_mask(image, top_predictions, colors, inference = True)
         
-        print(type(sec_image))
-        if sec_image is not None:
-            result2 = sec_image.copy()
-            if self.cfg.MODEL.MASK_ON:
-                result2 = self.overlay_mask(result2, top_predictions, colors)
-            #result2 = self.overlay_class_names(result2, top_predictions)
+        # this is gt pic
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.imshow(Image.fromarray(img))
+        ax.axis('off')
+        plt.show()
+        
+        # this is for prediction
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.imshow(Image.fromarray(img))
+        ax.axis('off')
+        
+        ppd = PatchCollection(polygons_predicted, facecolor = 'none', linewidths = 0, alpha = 0.4)
+        ax.add_collection(ppd)
+        ppd = PatchCollection(polygons_predicted, facecolor = 'none', edgecolors = colors_prediction, linewidths = 2)
+        ax.add_collection(ppd)
+        
+        plt.show()
+        
+        # this is for showing second images with similar polygons
+        if sec_image:
+            fig = plt.figure()
+            ax = fig.add_subplot(1,1,1)
+            ax.imshow(Image.fromarray(sec_image))
+            ax.axis('off')
+
+            ppd = PatchCollection(polygons_predicted, facecolor = 'none', linewidths = 0, alpha = 0.4)
+            ax.add_collection(ppd)
+            ppd = PatchCollection(polygons_predicted, facecolor = 'none', edgecolors = colors_prediction, linewidths = 2)
+            ax.add_collection(ppd)
+
+            plt.show()
             
-            return [result, result2], predictions
-        else:
-            return [result], predictions
-    
+        return predictions
     
     def get_ax(self, rows=1, cols=1, size=16):
         """Return a Matplotlib Axes array to be used in
