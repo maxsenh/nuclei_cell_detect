@@ -141,7 +141,7 @@ class NUCLEIdemo(object):
             detection_bboxes.append(detection_bbox)
         return detection_bboxes
     
-    def run_on_opencv_image(self, image, colors, sec_image = None):
+    def run_on_opencv_image(self, image, colors, save_path, sec_image = None):
         """
         Arguments:
             image (np.ndarray): an image as returned by OpenCV
@@ -159,25 +159,26 @@ class NUCLEIdemo(object):
         # this is gt pic
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-        ax.imshow(Image.fromarray(img))
+        ax.imshow(Image.fromarray(image))
         ax.axis('off')
         plt.show()
         
         # this is for prediction
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-        ax.imshow(Image.fromarray(img))
+        ax.imshow(Image.fromarray(image))
         ax.axis('off')
         
         ppd = PatchCollection(polygons_predicted, facecolor = 'none', linewidths = 0, alpha = 0.4)
         ax.add_collection(ppd)
         ppd = PatchCollection(polygons_predicted, facecolor = 'none', edgecolors = colors_prediction, linewidths = 2)
         ax.add_collection(ppd)
-        
+        if save_path:
+            plt.savefig(save_path[:-4] + 'pred.png', dpi = 200, bbox_inches='tight',pad_inches=0)
         plt.show()
         
         # this is for showing second images with similar polygons
-        if sec_image:
+        if sec_image is not None:
             fig = plt.figure()
             ax = fig.add_subplot(1,1,1)
             ax.imshow(Image.fromarray(sec_image))
@@ -187,7 +188,8 @@ class NUCLEIdemo(object):
             ax.add_collection(ppd)
             ppd = PatchCollection(polygons_predicted, facecolor = 'none', edgecolors = colors_prediction, linewidths = 2)
             ax.add_collection(ppd)
-
+            if save_path:
+                plt.savefig(save_path[:-4] + 'bris.png', dpi = 200, bbox_inches='tight',pad_inches=0)
             plt.show()
             
         return predictions
