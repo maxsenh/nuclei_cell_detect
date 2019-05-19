@@ -6,11 +6,9 @@ This project aims at providing a pipeline for efficient nuclei and cell detectio
 
 ![1313_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/new_images/Nuclei_SN_Hyb2_pos_1313_pred.png)
 
-## Detection of nuclei from cell culture after DAPI staining
-
 ![13_pred.png](https://raw.githubusercontent.com/maxsenh/nuclei_cell_detect/master/new_images/Raw_Nuclei_13_pred.png)
 
-## Upcoming: Prediction of cells after poly-T staining
+## Prediction of cells after poly-A staining
 
 Here the labeled image.
 
