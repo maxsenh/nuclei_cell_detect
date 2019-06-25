@@ -140,7 +140,30 @@ class NUCLEIdemo(object):
             detection_bbox.add_field("encoding_features", encoding_features)
             detection_bboxes.append(detection_bbox)
         return detection_bboxes
-    
+
+    def run_on_opencv_image_original(self, image):
+        """
+        Arguments:
+            image (np.ndarray): an image as returned by OpenCV
+        Returns:
+            prediction (BoxList): the detected objects. Additional information
+                of the detection properties can be found in the fields of
+                the BoxList via `prediction.fields()`
+        """
+        predictions = self.compute_prediction(image)
+        top_predictions = self.select_top_predictions(predictions)
+
+        result = image.copy()
+        result = self.overlay_boxes(result, top_predictions)
+        if self.cfg.MODEL.MASK_ON:
+            result = self.overlay_mask(result, top_predictions)
+        if self.cfg.MODEL.KEYPOINT_ON:
+            result = self.overlay_keypoints(result, top_predictions)
+        result = self.overlay_class_names(result, top_predictions)
+
+        return result
+
+
     def run_on_opencv_image(self, image, colors, save_path, sec_image = None):
         """
         Arguments:
@@ -260,6 +283,7 @@ class NUCLEIdemo(object):
         Do Inference, either show the boxes or the masks
         """
         
+        # load the config
         paths_catalog = import_file("maskrcnn_benchmark.config.paths_catalog", cfg.PATHS_CATALOG, True
         )
         DatasetCatalog = paths_catalog.DatasetCatalog
@@ -277,6 +301,7 @@ class NUCLEIdemo(object):
             pil_img = Image.open(img_dir + '/' + image['file_name'])
             filenames.append(image['file_name'])
             img = np.array(pil_img)[:, :, [0, 1, 2]]
+            
             # get ground truth boxes or masks
             anno = [obj for obj in data['annotations'] if obj['image_id'] == image['id']]
             classes = [obj['category_id'] for obj in data['annotations'] if obj['image_id'] == image['id']]

@@ -260,6 +260,7 @@ class NUCLEIdemo(object):
         Do Inference, either show the boxes or the masks
         """
         
+        # load the config
         paths_catalog = import_file("maskrcnn_benchmark.config.paths_catalog", cfg.PATHS_CATALOG, True
         )
         DatasetCatalog = paths_catalog.DatasetCatalog
@@ -277,6 +278,7 @@ class NUCLEIdemo(object):
             pil_img = Image.open(img_dir + '/' + image['file_name'])
             filenames.append(image['file_name'])
             img = np.array(pil_img)[:, :, [0, 1, 2]]
+            
             # get ground truth boxes or masks
             anno = [obj for obj in data['annotations'] if obj['image_id'] == image['id']]
             classes = [obj['category_id'] for obj in data['annotations'] if obj['image_id'] == image['id']]
